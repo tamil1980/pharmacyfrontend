@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaEnvelope, FaLock, FaSignInAlt } from 'react-icons/fa';
 
@@ -42,7 +43,7 @@ const Login = () => {
           </button>
         </form>
         <p style={{ marginTop: 20, fontSize: 12, color: '#999', textAlign: 'center' }}>
-          Don't have an account? <a href="/signup" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Sign up</a>
+          Don't have an account? <Link to="/signup" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Sign up</Link>
         </p>
       </div>
     </div>

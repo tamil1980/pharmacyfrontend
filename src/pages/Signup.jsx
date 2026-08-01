@@ -26,7 +26,7 @@ const Signup = () => {
     setError('');
     setLoading(true);
     try {
-      await register({ name, email, password, role });
+      await signup({ name, email, password, role });
       await login(email, password, role);
       toast.success('Account created successfully!');
     } catch (err) {

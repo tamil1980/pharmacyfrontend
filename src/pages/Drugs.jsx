@@ -5,7 +5,7 @@ import Spinner from '../components/Spinner';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaSave, FaTimes, FaFileExcel, FaDownload, FaUpload } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
-const emptyDrug = { name: '', genericName: '', category: '', manufacturer: '', dosageForm: 'Tablet', strength: '', batchNumber: '', expiryDate: '', purchasePrice: '', sellingPrice: '', mrp: '', quantity: '', minimumStock: 10, hsnCode: '', gstRate: 12, scheduleType: 'OTC' };
+const emptyDrug = { name: '', genericName: '', category: '', manufacturer: '', dosageForm: 'Tablet', strength: '', batchNumber: '', expiryDate: '', purchasePrice: '', sellingPrice: '', mrp: '', quantity: '', minimumStock: 10, hsnCode: '', gstRate: 12, scheduleType: 'OTC', barcode: '', unit: 'Strip' };
 const categories = ['Antibiotic', 'Analgesic', 'Antipyretic', 'Antacid', 'Antihistamine', 'Cardiovascular', 'Diabetes', 'Dermatology', 'Eye/Ear', 'Respiratory', 'Vitamin/Supplement', 'Other'];
 const dosageForms = ['Tablet', 'Capsule', 'Syrup', 'Injection', 'Ointment', 'Drops', 'Inhaler', 'Powder', 'Gel', 'Spray', 'Other'];
 
@@ -36,7 +36,9 @@ const Drugs = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const payload = { ...form, purchasePrice: Number(form.purchasePrice), sellingPrice: Number(form.sellingPrice), mrp: Number(form.mrp), quantity: Number(form.quantity), minimumStock: Number(form.minimumStock), gstRate: Number(form.gstRate) };
+      let barcode = String(form.barcode || '').trim();
+      if (!barcode) barcode = String(form.batchNumber || 'MED').replace(/[^0-9]/g, '').padStart(12, '1').slice(0, 12) || String(Date.now()).slice(-12);
+      const payload = { ...form, barcode, purchasePrice: Number(form.purchasePrice), sellingPrice: Number(form.sellingPrice), mrp: Number(form.mrp), quantity: Number(form.quantity), minimumStock: Number(form.minimumStock), gstRate: Number(form.gstRate) };
       if (editDrug) {
         await drugAPI.update(editDrug._id, payload);
       } else {
@@ -57,7 +59,8 @@ const Drugs = () => {
       expiryDate: drug.expiryDate ? drug.expiryDate.split('T')[0] : '',
       purchasePrice: drug.purchasePrice, sellingPrice: drug.sellingPrice, mrp: drug.mrp,
       quantity: drug.quantity, minimumStock: drug.minimumStock, hsnCode: drug.hsnCode || '',
-      gstRate: drug.gstRate, scheduleType: drug.scheduleType
+      gstRate: drug.gstRate, scheduleType: drug.scheduleType, barcode: drug.barcode || '',
+      unit: drug.unit || 'Strip'
     });
     setShowModal(true);
   };
@@ -189,6 +192,12 @@ const Drugs = () => {
                   <div className="form-group"><label>HSN Code</label><input value={form.hsnCode} onChange={(e) => updateField('hsnCode', e.target.value)} /></div>
                   <div className="form-group"><label>GST Rate %</label><input type="number" value={form.gstRate} onChange={(e) => updateField('gstRate', e.target.value)} /></div>
                   <div className="form-group"><label>Schedule</label><select value={form.scheduleType} onChange={(e) => updateField('scheduleType', e.target.value)}><option value="OTC">OTC</option><option value="H">H</option><option value="H1">H1</option><option value="X">X</option><option value="Other">Other</option></select></div>
+                </div>
+                <div className="form-row-3">
+                  <div className="form-group"><label>Barcode</label><input placeholder="Auto-generated if empty" value={form.barcode} onChange={(e) => updateField('barcode', e.target.value)} /></div>
+                  <div className="form-group"><label>Unit</label><select value={form.unit} onChange={(e) => updateField('unit', e.target.value)}>
+                    {['Strip', 'Box', 'Bottle', 'Piece', 'Vial', 'Tube', 'Sachet', 'Ampule', 'Other'].map((u) => <option key={u} value={u}>{u}</option>)}
+                  </select></div>
                 </div>
               </div>
               <div className="modal-footer">

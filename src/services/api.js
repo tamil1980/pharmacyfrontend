@@ -24,6 +24,12 @@ export const authAPI = {
   login: (data) => API.post('/auth/login', data),
   signup: (data) => API.post('/auth/signup', data),
   getMe: () => API.get('/auth/me'),
+  getUsers: () => API.get('/auth/users'),
+  createUser: (data) => API.post('/auth/users', data),
+  updateUser: (id, data) => API.put(`/auth/users/${id}`, data),
+  deleteUser: (id) => API.delete(`/auth/users/${id}`),
+  forgotPassword: (data) => API.post('/auth/forgot-password', data),
+  resetPassword: (data) => API.post('/auth/reset-password', data),
 };
 
 export const drugAPI = {
@@ -63,6 +69,42 @@ export const salesReturnAPI = {
   getOne: (id) => API.get(`/returns/${id}`),
   create: (data) => API.post('/returns', data),
 };
+
+export const purchaseReturnAPI = {
+  getAll: (params) => API.get('/purchase-returns', { params }),
+  getOne: (id) => API.get(`/purchase-returns/${id}`),
+  create: (data) => API.post('/purchase-returns', data),
+};
+
+export const stockAPI = {
+  getAdjustments: (params) => API.get('/stock/adjustments', { params }),
+  createAdjustment: (data) => API.post('/stock/adjustments', data),
+  getTransfers: (params) => API.get('/stock/transfers', { params }),
+  createTransfer: (data) => API.post('/stock/transfers', data),
+  getOpenings: (params) => API.get('/stock/openings', { params }),
+  createOpening: (data) => API.post('/stock/openings', data),
+  getLedger: (params) => API.get('/stock/ledger', { params }),
+};
+
+export const accountAPI = {
+  getAll: (params) => API.get('/accounts', { params }),
+  create: (data) => API.post('/accounts', data),
+  remove: (id) => API.delete(`/accounts/${id}`),
+};
+
+const masterFactory = (base) => ({
+  getAll: (params) => API.get(base, { params }),
+  getOne: (id) => API.get(`${base}/${id}`),
+  create: (data) => API.post(base, data),
+  update: (id, data) => API.put(`${base}/${id}`, data),
+  remove: (id) => API.delete(`${base}/${id}`),
+});
+
+export const categoryAPI = masterFactory('/categories');
+export const unitAPI = masterFactory('/units');
+export const companyAPI = masterFactory('/companies');
+export const customerAPI = masterFactory('/customers');
+export const doctorAPI = masterFactory('/doctors');
 
 export const settingsAPI = {
   get: () => API.get('/settings'),

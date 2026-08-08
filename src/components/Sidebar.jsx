@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   FaTachometerAlt, FaPills, FaTruck, FaFileInvoiceDollar, FaClipboardList,
-  FaChartBar, FaWarehouse, FaSignOutAlt, FaMedkit, FaCog
+  FaChartBar, FaWarehouse, FaSignOutAlt, FaMedkit, FaCog, FaUndoAlt
 } from 'react-icons/fa';
 
 const Sidebar = () => {
@@ -18,6 +18,7 @@ const Sidebar = () => {
     { path: '/grn', icon: <FaClipboardList style={{ color: '#8b5cf6' }} />, label: 'GRN Entry', roles: ['admin', 'pharmacist'] },
     { path: '/billing', icon: <FaFileInvoiceDollar style={{ color: '#10b981' }} />, label: 'Billing', roles: ['admin', 'pharmacist', 'cashier'] },
     { path: '/invoices', icon: <FaWarehouse style={{ color: '#06b6d4' }} />, label: 'Invoices', roles: ['admin', 'pharmacist', 'cashier'] },
+    { path: '/returns', icon: <FaUndoAlt style={{ color: '#f43f5e' }} />, label: 'Sales Returns', roles: ['admin', 'pharmacist'] },
     { path: '/stock', icon: <FaMedkit style={{ color: '#ec4899' }} />, label: 'Stock Report', roles: ['admin', 'pharmacist'] },
     { path: '/reports', icon: <FaChartBar style={{ color: '#f59e0b' }} />, label: 'Reports', roles: ['admin'] },
     { path: '/settings', icon: <FaCog style={{ color: '#14b8a6' }} />, label: 'Settings', roles: ['admin'] },

@@ -58,6 +58,12 @@ export const invoiceAPI = {
   getDashboard: () => API.get('/invoices/dashboard'),
 };
 
+export const salesReturnAPI = {
+  getAll: (params) => API.get('/returns', { params }),
+  getOne: (id) => API.get(`/returns/${id}`),
+  create: (data) => API.post('/returns', data),
+};
+
 export const settingsAPI = {
   get: () => API.get('/settings'),
   update: (data) => API.put('/settings', data),

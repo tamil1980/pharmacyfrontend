@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { invoiceAPI, drugAPI, grnAPI } from '../services/api';
+import { invoiceAPI, drugAPI, grnAPI, salesReturnAPI } from '../services/api';
 import Header from '../components/Header';
-import { FaChartBar, FaFileInvoiceDollar, FaPills, FaClipboardList } from 'react-icons/fa';
+import { FaChartBar, FaFileInvoiceDollar, FaPills, FaClipboardList, FaUndoAlt } from 'react-icons/fa';
 
 const Reports = () => {
-  const [tab, setTab] = useState('sales');
+  const [tab, setTab] = useState('summary');
   const [invoices, setInvoices] = useState([]);
   const [drugs, setDrugs] = useState([]);
   const [grns, setGrns] = useState([]);
+  const [returns, setReturns] = useState([]);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
@@ -21,6 +22,10 @@ const Reports = () => {
       if (tab === 'sales' || tab === 'summary') {
         const { data } = await invoiceAPI.getAll({ ...params, limit: 200 });
         setInvoices(data.invoices || []);
+      }
+      if (tab === 'returns') {
+        const { data } = await salesReturnAPI.getAll({ ...params, limit: 200 });
+        setReturns(data.returns || []);
       }
       if (tab === 'stock') {
         const { data } = await drugAPI.getAll({ limit: 500 });
@@ -37,10 +42,13 @@ const Reports = () => {
   const totalGST = invoices.reduce((sum, i) => sum + (i.totalGST || 0), 0);
   const totalDiscount = invoices.reduce((sum, i) => sum + (i.totalDiscount || 0), 0);
   const totalPurchases = grns.reduce((sum, g) => sum + (g.netAmount || 0), 0);
+  const totalRefunds = returns.reduce((sum, r) => sum + (r.refundAmount || 0), 0);
+  const totalReturnedItems = returns.reduce((sum, r) => sum + (r.items?.reduce((a, it) => a + it.quantity, 0) || 0), 0);
 
   const tabs = [
     { id: 'summary', label: 'Sales Summary', icon: <FaChartBar /> },
     { id: 'sales', label: 'Sales Report', icon: <FaFileInvoiceDollar /> },
+    { id: 'returns', label: 'Sales Return Report', icon: <FaUndoAlt /> },
     { id: 'stock', label: 'Stock Report', icon: <FaPills /> },
     { id: 'grn', label: 'Purchase Report', icon: <FaClipboardList /> },
   ];
@@ -50,7 +58,14 @@ const Reports = () => {
       <Header title="Reports" />
       <div className="main-content">
         <div className="page-content">
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          <div className="dash-hero">
+            <div>
+              <h2 className="dash-hero-title">Reports & Analytics</h2>
+              <p className="dash-hero-sub">Sales, returns, stock and purchase insights</p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
             {tabs.map((t) => (
               <button key={t.id} className={`btn ${tab === t.id ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTab(t.id)}>
                 {t.icon} {t.label}
@@ -66,10 +81,10 @@ const Reports = () => {
           {tab === 'summary' && (
             <div>
               <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                <div className="stat-card"><div className="stat-icon green"><FaFileInvoiceDollar /></div><div className="stat-info"><h2>₹{totalSales.toLocaleString()}</h2><p>Total Sales</p></div></div>
-                <div className="stat-card"><div className="stat-icon blue"><FaClipboardList /></div><div className="stat-info"><h2>₹{totalPurchases.toLocaleString()}</h2><p>Total Purchases</p></div></div>
-                <div className="stat-card"><div className="stat-icon orange"><FaChartBar /></div><div className="stat-info"><h2>₹{totalGST.toLocaleString()}</h2><p>Total GST Collected</p></div></div>
-                <div className="stat-card"><div className="stat-icon red"><FaChartBar /></div><div className="stat-info"><h2>{invoices.length}</h2><p>Total Invoices</p></div></div>
+                <div className="stat-card stat-card-gradient green"><div className="stat-icon"><FaFileInvoiceDollar /></div><div className="stat-info"><h2>₹{totalSales.toLocaleString()}</h2><p>Total Sales</p></div></div>
+                <div className="stat-card stat-card-gradient indigo"><div className="stat-icon"><FaClipboardList /></div><div className="stat-info"><h2>₹{totalPurchases.toLocaleString()}</h2><p>Total Purchases</p></div></div>
+                <div className="stat-card stat-card-gradient orange"><div className="stat-icon"><FaChartBar /></div><div className="stat-info"><h2>₹{totalGST.toLocaleString()}</h2><p>Total GST Collected</p></div></div>
+                <div className="stat-card stat-card-gradient cyan"><div className="stat-icon"><FaFileInvoiceDollar /></div><div className="stat-info"><h2>{invoices.length}</h2><p>Total Invoices</p></div></div>
               </div>
               <div className="stats-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
                 <div className="card"><div className="card-header"><h3>Profit Estimate</h3></div><div className="card-body">
@@ -122,6 +137,52 @@ const Reports = () => {
                     </tr>
                   </tfoot>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {tab === 'returns' && (
+            <div>
+              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                <div className="stat-card stat-card-gradient purple"><div className="stat-icon"><FaUndoAlt /></div><div className="stat-info"><h2>{returns.length}</h2><p>Total Returns</p></div></div>
+                <div className="stat-card stat-card-gradient red"><div className="stat-icon"><FaUndoAlt /></div><div className="stat-info"><h2>₹{totalRefunds.toLocaleString()}</h2><p>Total Refunded</p></div></div>
+                <div className="stat-card stat-card-gradient orange"><div className="stat-icon"><FaChartBar /></div><div className="stat-info"><h2>{totalReturnedItems}</h2><p>Items Returned</p></div></div>
+                <div className="stat-card stat-card-gradient cyan"><div className="stat-icon"><FaFileInvoiceDollar /></div><div className="stat-info"><h2>{totalRefunds > 0 ? (totalRefunds / returns.length).toFixed(2) : '0.00'}</h2><p>Avg Refund / Return</p></div></div>
+              </div>
+              <div className="card">
+                <div className="card-header"><h3>Sales Return Report ({returns.length} returns)</h3></div>
+                <div className="card-body">
+                  <table>
+                    <thead><tr><th>Return No</th><th>Invoice</th><th>Customer</th><th>Items</th><th>Subtotal</th><th>Discount</th><th>GST</th><th>Refund</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody>
+                      {returns.map((r) => (
+                        <tr key={r._id}>
+                          <td><strong>{r.returnNumber}</strong></td>
+                          <td>{r.invoiceNumber}</td>
+                          <td>{r.customerName}</td>
+                          <td>{r.items?.length}</td>
+                          <td>₹{r.subtotal?.toLocaleString()}</td>
+                          <td>-₹{r.totalDiscount?.toLocaleString()}</td>
+                          <td>₹{r.totalGST?.toLocaleString()}</td>
+                          <td><strong>₹{r.refundAmount?.toLocaleString()}</strong></td>
+                          <td><span className={`badge ${r.status === 'returned' ? 'badge-danger' : 'badge-warning'}`}>{r.status.toUpperCase()}</span></td>
+                          <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ fontWeight: 700, background: '#f8f9fa' }}>
+                        <td colSpan={3}>Total</td>
+                        <td></td>
+                        <td>₹{returns.reduce((s, r) => s + (r.subtotal || 0), 0).toLocaleString()}</td>
+                        <td>-₹{returns.reduce((s, r) => s + (r.totalDiscount || 0), 0).toLocaleString()}</td>
+                        <td>₹{returns.reduce((s, r) => s + (r.totalGST || 0), 0).toLocaleString()}</td>
+                        <td>₹{totalRefunds.toLocaleString()}</td>
+                        <td colSpan={2}></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
             </div>
           )}
